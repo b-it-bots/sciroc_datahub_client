@@ -1,4 +1,4 @@
-# mir_datahub_client
+# sciroc_datahub_client
 
 ### Schemas for each episode
 https://api.pp.mksmart.org/sciroc-episode3/

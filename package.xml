@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>mir_datahub_client</name>
+  <name>sciroc_datahub_client</name>
   <version>1.0.0</version>
   <description>A DataHub client communicating with REST API for SciRoc 2019</description>
 
