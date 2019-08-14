@@ -24,6 +24,11 @@ request_types:
         type: "POST"
         id_required: True
         schema_name: "InventoryItem"
+    set_shop_put:
+        url: "sciroc-episode7-inventory-item"
+        type: "PUT"
+        id_required: True
+        schema_name: "InventoryItem"
     list_inventory_orders:
         url: "sciroc-episode7-inventory-order"
         type: "GET"
