@@ -1,0 +1,47 @@
+request_types:
+    add_status:
+        url: "sciroc-robot-status"
+        type: "POST"
+        id_required: True
+        schema_name: "RobotStatus"
+    set_robot_location:
+        url: "sciroc-robot-location"
+        type: "POST"
+        id_required: True
+        schema_name: "RobotLocation"
+    list_inventory_items:
+        url: "sciroc-episode7-inventory-item"
+        type: "GET"
+        id_required: False
+        schema_name: "InventoryItem"
+    get_shop_info:
+        url: "sciroc-episode7-inventory-item"
+        type: "GET"
+        id_required: True
+        schema_name: "InventoryItem"
+    set_shop:
+        url: "sciroc-episode7-inventory-item"
+        type: "POST"
+        id_required: True
+        schema_name: "InventoryItem"
+    list_inventory_orders:
+        url: "sciroc-episode7-inventory-order"
+        type: "GET"
+        id_required: False
+        schema_name: "InventoryOrder"
+    get_order_info:
+        url: "sciroc-episode7-inventory-order"
+        type: "GET"
+        id_required: True
+        schema_name: "InventoryOrder"
+    set_inventory_order:
+        url: "sciroc-episode7-inventory-order"
+        type: "POST"
+        id_required: True
+        schema_name: "InventoryOrder"
+schemas:
+    RobotStatus: ["@id", "@type", "message", "episode", "team", "timestamp", "x", "y", "z"]
+    RobotLocation: ["@id", "@type", "episode", "team", "timestamp", "x", "y", "z"]
+    InventoryItem: ["@id", "@type", "label", "description", "shelf", "slot", "quantity", "timestamp"]
+    InventoryOrder: ["@id", "@type", "timestamp", "items", "status"]
+    InventoryItemOrder: ["@id", "@type", "timestamp", "items", "status"]

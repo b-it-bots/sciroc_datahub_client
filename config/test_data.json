@@ -1,0 +1,35 @@
+{
+    "inventoryItems":
+    [
+        {
+            "@id": "123456",
+            "@type": "bottle",
+            "label": "milk bottle",
+            "description": "some description",
+            "shelf": "shelf_001",
+            "slot": "bottom",
+            "quantity": 3,
+            "timestamp": "2019-08-10T17:14:55.139Z"
+        },
+        {
+            "@id": "12345",
+            "@type": "box",
+            "label": "cereals",
+            "description": "some description",
+            "shelf": "shelf_002",
+            "slot": "bottom",
+            "quantity": 1,
+            "timestamp": "2019-08-10T17:14:55.139Z"
+        },
+        {
+            "@id": "1234",
+            "@type": "packing",
+            "label": "eggs",
+            "description": "some description",
+            "shelf": "shelf_001",
+            "slot": "bottom",
+            "quantity": 2,
+            "timestamp": "2019-08-10T17:14:55.139Z"
+        }
+    ]
+}

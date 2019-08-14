@@ -1,0 +1,7 @@
+base_url: "http://localhost:5000/"
+team_id: "b-it-bots"
+auth_required: False
+# only used when auth_required is set to true
+auth_info:
+    user: "dharmin"
+    pass: "123456"

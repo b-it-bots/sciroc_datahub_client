@@ -1,0 +1,7 @@
+base_url: "https://api.pp.mksmart.org/sciroc-competition/"
+team_id: "b-it-bots"
+auth_required: True
+# only used when auth_required is set to true
+auth_info:
+    user: "dharmin"
+    pass: "123456"
