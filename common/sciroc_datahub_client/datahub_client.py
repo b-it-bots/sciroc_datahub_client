@@ -52,7 +52,7 @@ class DataHubClient(object):
         dhc = DataHubClient(api_info_file_name, **data)
         return dhc
 
-    def update_location(self, x, y):
+    def update_robot_location(self, x, y):
         """Update the location of robot with x and y floats
 
         :x: float
@@ -131,6 +131,49 @@ class DataHubClient(object):
             order_dict[order_name] = item_dict
         return order_dict
 
+    def get_item_info(self, item_id):
+        """Return a dict containing info for given `item_id`
+
+        :item_id: str
+        :returns: dict or None
+
+        """
+        request_name = "get_shop_info"
+
+        items = self.make_request(request_name, url_id=item_id)
+        try:
+            item = items[0]
+            item_dict = dict()
+            item_dict["id"] = item["@id"].encode('utf-8')
+            item_dict["name"] = item["label"].encode('utf-8')
+            item_dict["shelf"] = item["shelf"].encode('utf-8')
+            item_dict["slot"] = item["slot"].encode('utf-8')
+            item_dict["quantity"] = item["quantity"]
+            return item_dict
+        except Exception as e:
+            print("Encountered exception while getting item", item_id, "\n", str(e))
+            return None
+
+    def get_location_of(self, item_id):
+        """Return a dict containing shelf and slot info of `item_id`
+
+        :item_id: str
+        :returns: dict or None
+
+        Return example:
+            {
+                'shelf': '2',
+                'slot': '1'
+            }
+
+        """
+        item_dict = self.get_item_info(item_id)
+        if item_dict is not None:
+            location = {key: item_dict[key] for key in ('shelf', 'slot')}
+        else:
+            location = None
+        return location
+
     def make_request(self, request_name, **kwargs):
         if request_name not in self._request_types:
             return None
@@ -180,26 +223,38 @@ class DataHubClient(object):
 if __name__ == "__main__":
     DHC = DataHubClient.default_init()
 
+    """
     # list inventory items
-    # resp = DHC.make_request('list_inventory_items')
+    resp = DHC.make_request('list_inventory_items')
 
     # get shop info
-    # resp = DHC.make_request('get_shop_info', url_id="ITEM01")
-    # update_dict = dict()
-    # for key in resp[0]:
-    #     if str(key)[0] == "_":
-    #         continue
-    #     try:
-    #         update_dict[key.encode('utf-8')] = resp[0][key].encode('utf-8')
-    #     except AttributeError:
-    #         update_dict[key.encode('utf-8')] = resp[0][key]
+    resp = DHC.make_request('get_shop_info', url_id="ITEM01")
+    update_dict = dict()
+    for key in resp[0]:
+        if str(key)[0] == "_":
+            continue
+        try:
+            update_dict[key.encode('utf-8')] = resp[0][key].encode('utf-8')
+        except AttributeError:
+            update_dict[key.encode('utf-8')] = resp[0][key]
 
-    # print(update_dict)
-    # update_dict['quantity'] -= 1 # place holder for processing and changing
-    # resp = DHC.make_request('set_shop', url_id="ITEM00", arguments=update_dict)
+    print(update_dict)
+    update_dict['quantity'] -= 1 # place holder for processing and changing
+    resp = DHC.make_request('set_shop', url_id="ITEM00", arguments=update_dict)
 
-    # print(resp)
-    # DHC.update_location(1.0, 1.0)
+    print(resp)
+    """
+
+    # DHC.update_robot_location(1.0, 1.0)
+
     # DHC.update_status("Going to Shelf 0", 1.0, 1.0)
-    goals = DHC.get_goal()
-    print(goals)
+
+    # goals = DHC.get_goal()
+    # print(goals)
+
+    ITEM_ID = "ITEM01"
+    info = DHC.get_item_info(ITEM_ID)
+    print(info)
+
+    location = DHC.get_location_of(ITEM_ID)
+    print(location)
