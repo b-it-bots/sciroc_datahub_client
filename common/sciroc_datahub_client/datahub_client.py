@@ -6,6 +6,7 @@ import os
 import json
 import yaml
 import datetime
+import time
 import requests
 
 def get_kwargs_from_config(config_file_name):
@@ -31,7 +32,8 @@ class DataHubClient(object):
         self._base_url = kwargs.get('base_url', 'http://localhost:5000/')
         self._auth_required = kwargs.get('auth_required', False)
         self._username, self._password = None, None
-        self._episode_name = kwargs.get('_episode_name', 'EPISODE7')
+        self._episode_name = kwargs.get('episode_name', 'EPISODE7')
+        self._robot_name = kwargs.get('robot_name', 'youbot')
         if self._auth_required:
             auth_info = kwargs.get('auth_info', None)
             assert isinstance(auth_info, dict) and 'user' in auth_info and 'pass' in auth_info
@@ -52,10 +54,13 @@ class DataHubClient(object):
 
     def update_location(self, x, y):
         """Update the location of robot with x and y floats
+
+        :x: float
+        :y: float
         :returns: None
 
         """
-        location_id = "bitbots-youbot"
+        location_id = self._team_name + "-" + self._robot_name
         request_name = "set_robot_location"
         request_type = self._request_types[request_name]
 
@@ -66,12 +71,38 @@ class DataHubClient(object):
         arguments["@type"] = request_type["schema_name"]
         arguments["episode"] = self._episode_name
         arguments["team"] = self._team_name
-        arguments["timestamp"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        arguments["timestamp"] = self._get_current_timestamp()
         arguments["x"] = x
         arguments["y"] = y
         arguments["z"] = 0.0
-        resp = self.make_request("set_robot_location", url_id=location_id, arguments=arguments)
-        print(resp)
+        resp = self.make_request(request_name, url_id=location_id, arguments=arguments)
+
+    def update_status(self, status_msg, x=0.0, y=0.0):
+        """Update the status of robot with given string
+
+        :status_msg: string
+        :x: float
+        :y: float
+        :returns: None
+
+        """
+        status_id = self._team_name + "-" + self._robot_name + "-" + str(int(time.time()))
+        request_name = "add_status"
+        request_type = self._request_types[request_name]
+
+        arguments = dict()
+        for key in request_type['schema_keys']:
+            arguments[key] = None
+        arguments["@id"] = status_id
+        arguments["@type"] = request_type["schema_name"]
+        arguments["message"] = status_msg
+        arguments["episode"] = self._episode_name
+        arguments["team"] = self._team_name
+        arguments["timestamp"] = self._get_current_timestamp()
+        arguments["x"] = x
+        arguments["y"] = y
+        arguments["z"] = 0.0
+        resp = self.make_request(request_name, url_id=status_id, arguments=arguments)
 
     def make_request(self, request_name, **kwargs):
         if request_name not in self._request_types:
@@ -106,6 +137,9 @@ class DataHubClient(object):
             print("Received status code", str(resp.status_code))
         return response
 
+    def _get_current_timestamp(self):
+        return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
     def _read_api_info_from_file(self, api_info_file):
         self._request_types = None
         with open(api_info_file, 'r') as file_obj:
@@ -123,20 +157,20 @@ if __name__ == "__main__":
     # resp = DHC.make_request('list_inventory_items')
 
     # get shop info
-    resp = DHC.make_request('get_shop_info', url_id="ITEM01")
-    update_dict = dict()
-    for key in resp[0]:
-        if str(key)[0] == "_":
-            continue
-        try:
-            update_dict[key.encode('utf-8')] = resp[0][key].encode('utf-8')
-        except AttributeError:
-            update_dict[key.encode('utf-8')] = resp[0][key]
+    # resp = DHC.make_request('get_shop_info', url_id="ITEM01")
+    # update_dict = dict()
+    # for key in resp[0]:
+    #     if str(key)[0] == "_":
+    #         continue
+    #     try:
+    #         update_dict[key.encode('utf-8')] = resp[0][key].encode('utf-8')
+    #     except AttributeError:
+    #         update_dict[key.encode('utf-8')] = resp[0][key]
 
-    print(update_dict)
-    update_dict['quantity'] -= 1 # place holder for processing and changing
-    # resp = DHC.make_request('set_shop', url_id="ITEM00", **update_dict)
+    # print(update_dict)
+    # update_dict['quantity'] -= 1 # place holder for processing and changing
     # resp = DHC.make_request('set_shop', url_id="ITEM00", arguments=update_dict)
 
     print(resp)
     DHC.update_location(1.0, 1.0)
+    DHC.update_status("Going to Shelf 0", 1.0, 1.0)
