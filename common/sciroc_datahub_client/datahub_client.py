@@ -104,6 +104,33 @@ class DataHubClient(object):
         arguments["z"] = 0.0
         resp = self.make_request(request_name, url_id=status_id, arguments=arguments)
 
+    def get_goal(self):
+        """Return order dict obj
+        :returns: dict
+
+        Return type example:
+            {
+                "ORDER001": {
+                    "ITEM001": 5,
+                    "ITEM003": 3
+                }
+            }
+
+        """
+        request_name = "list_inventory_orders"
+
+        orders = self.make_request(request_name)
+        order_dict = dict()
+        for order in orders:
+            order_name = order["@id"].encode('utf-8')
+            item_dict = dict()
+            for item in order["items"]:
+                item_id = item["inventory-item-id"].encode('utf-8')
+                item_quantity = item["quantity"]
+                item_dict[item_id] = item_quantity
+            order_dict[order_name] = item_dict
+        return order_dict
+
     def make_request(self, request_name, **kwargs):
         if request_name not in self._request_types:
             return None
@@ -171,6 +198,8 @@ if __name__ == "__main__":
     # update_dict['quantity'] -= 1 # place holder for processing and changing
     # resp = DHC.make_request('set_shop', url_id="ITEM00", arguments=update_dict)
 
-    print(resp)
-    DHC.update_location(1.0, 1.0)
-    DHC.update_status("Going to Shelf 0", 1.0, 1.0)
+    # print(resp)
+    # DHC.update_location(1.0, 1.0)
+    # DHC.update_status("Going to Shelf 0", 1.0, 1.0)
+    goals = DHC.get_goal()
+    print(goals)
