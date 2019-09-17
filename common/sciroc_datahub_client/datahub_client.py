@@ -7,6 +7,19 @@ import json
 import yaml
 import requests
 
+def get_kwargs_from_config(config_file_name):
+    config_file = get_full_path_for_file_name(config_file_name)
+    with open(config_file, 'r') as file_obj:
+        data = yaml.safe_load(file_obj)
+    return data
+
+def get_full_path_for_file_name(file_name):
+    src_dir = os.path.abspath(os.path.dirname(__file__))
+    main_dir = os.path.dirname(os.path.dirname(src_dir))
+    config_file = os.path.join(main_dir, 'config/'+file_name)
+    return config_file
+
+
 class DataHubClient(object):
 
     """Client for DataHub"""
@@ -22,6 +35,18 @@ class DataHubClient(object):
             assert isinstance(auth_info, dict) and 'user' in auth_info and 'pass' in auth_info
             self._username = auth_info.get('user')
             self._password = auth_info.get('pass')
+
+    @staticmethod
+    def default_init():
+        """Default init method
+        :returns: DataHubClient obj
+
+        """
+        config_file_name = 'datahub.yaml'
+        api_info_file_name = get_full_path_for_file_name('rest_api_info.yaml')
+        data = get_kwargs_from_config(config_file_name)
+        dhc = DataHubClient(api_info_file_name, **data)
+        return dhc
 
     def make_request(self, request_name, **kwargs):
         if request_name not in self._request_types:
@@ -66,24 +91,8 @@ class DataHubClient(object):
                     api_info['schemas'][self._request_types[request_type_name]['schema_name']]
         
 
-def get_kwargs_from_config(config_file_name):
-    config_file = get_full_path_for_file_name(config_file_name)
-    with open(config_file, 'r') as file_obj:
-        data = yaml.safe_load(file_obj)
-    return data
-
-def get_full_path_for_file_name(file_name):
-    src_dir = os.path.abspath(os.path.dirname(__file__))
-    main_dir = os.path.dirname(os.path.dirname(src_dir))
-    config_file = os.path.join(main_dir, 'config/'+file_name)
-    return config_file
-
 if __name__ == "__main__":
-    # CONFIG_FILE_NAME = 'dummy.yaml'
-    CONFIG_FILE_NAME = 'datahub.yaml'
-    API_INFO_FILE_NAME = get_full_path_for_file_name('rest_api_info.yaml')
-    DATA = get_kwargs_from_config(CONFIG_FILE_NAME)
-    DHC = DataHubClient(API_INFO_FILE_NAME, **DATA)
+    DHC = DataHubClient.default_init()
 
     # list inventory items
     # resp = DHC.make_request('list_inventory_items')
