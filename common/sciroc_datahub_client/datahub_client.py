@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import json
 import yaml
 import requests
 
@@ -12,7 +13,7 @@ class DataHubClient(object):
 
     def __init__(self, api_info_file_name, **kwargs):
         self._read_api_info_from_file(api_info_file_name)
-        self._team_name = kwargs.get('team_name', 'b-it-bots')
+        self._team_name = kwargs.get('team_name', 'bitbots')
         self._base_url = kwargs.get('base_url', 'http://localhost:5000/')
         self._auth_required = kwargs.get('auth_required', False)
         self._username, self._password = None, None
@@ -31,15 +32,17 @@ class DataHubClient(object):
         if request_type['id_required']:
             id_string = str(kwargs.get('url_id', ''))
             url += '/' + id_string
+        print(url)
         auth = None
         if self._auth_required:
-            auth = requests.auth.HTTPBasicAuth('dharmin', '123456')
+            auth = requests.auth.HTTPBasicAuth(self._username, self._password)
 
         arguments = None
         if request_type['type'] == 'POST' or request_type['type'] == 'PUT':
-            argument = dict()
+            arguments = kwargs.get('arguments', dict())
             for key in request_type['schema_keys']:
-                argument[key] = kwargs.get(key, '')
+                assert key in arguments
+            print(arguments)
         resp = requests.request(request_type['type'], url, json=arguments, auth=auth)
 
         response = None
@@ -47,8 +50,8 @@ class DataHubClient(object):
             print("Request failed. Received status code", str(resp.status_code))
             print(resp.text)
         elif resp.status_code == 200:
+            print("Request succeeded")
             response = resp.json()
-            print(resp.text)
         else:
             print("Received status code", str(resp.status_code))
         return response
@@ -76,11 +79,29 @@ def get_full_path_for_file_name(file_name):
     return config_file
 
 if __name__ == "__main__":
-    CONFIG_FILE_NAME = 'dummy.yaml'
-    # CONFIG_FILE_NAME = 'datahub.yaml'
+    # CONFIG_FILE_NAME = 'dummy.yaml'
+    CONFIG_FILE_NAME = 'datahub.yaml'
     API_INFO_FILE_NAME = get_full_path_for_file_name('rest_api_info.yaml')
     DATA = get_kwargs_from_config(CONFIG_FILE_NAME)
     DHC = DataHubClient(API_INFO_FILE_NAME, **DATA)
-    DHC.make_request('list_inventory_items')
-    DHC.make_request('get_shop_info', url_id="12345")
-    DHC.make_request('set_shop', url_id="12345", quantity=0)
+
+    # list inventory items
+    # resp = DHC.make_request('list_inventory_items')
+
+    # get shop info
+    resp = DHC.make_request('get_shop_info', url_id="ITEM00")
+    update_dict = dict()
+    for key in resp[0]:
+        if str(key)[0] == "_":
+            continue
+        try:
+            update_dict[key.encode('utf-8')] = resp[0][key].encode('utf-8')
+        except AttributeError:
+            update_dict[key.encode('utf-8')] = resp[0][key]
+
+    print(update_dict)
+    update_dict['quantity'] -= 1 # place holder for processing and changing
+    # resp = DHC.make_request('set_shop', url_id="ITEM00", **update_dict)
+    # resp = DHC.make_request('set_shop', url_id="ITEM00", arguments=update_dict)
+
+    print(resp)
