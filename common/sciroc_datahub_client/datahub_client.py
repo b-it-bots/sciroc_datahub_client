@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import json
 import yaml
+import datetime
 import requests
 
 def get_kwargs_from_config(config_file_name):
@@ -30,6 +31,7 @@ class DataHubClient(object):
         self._base_url = kwargs.get('base_url', 'http://localhost:5000/')
         self._auth_required = kwargs.get('auth_required', False)
         self._username, self._password = None, None
+        self._episode_name = kwargs.get('_episode_name', 'EPISODE7')
         if self._auth_required:
             auth_info = kwargs.get('auth_info', None)
             assert isinstance(auth_info, dict) and 'user' in auth_info and 'pass' in auth_info
@@ -47,6 +49,29 @@ class DataHubClient(object):
         data = get_kwargs_from_config(config_file_name)
         dhc = DataHubClient(api_info_file_name, **data)
         return dhc
+
+    def update_location(self, x, y):
+        """Update the location of robot with x and y floats
+        :returns: None
+
+        """
+        location_id = "bitbots-youbot"
+        request_name = "set_robot_location"
+        request_type = self._request_types[request_name]
+
+        arguments = dict()
+        for key in request_type['schema_keys']:
+            arguments[key] = None
+        arguments["@id"] = location_id
+        arguments["@type"] = request_type["schema_name"]
+        arguments["episode"] = self._episode_name
+        arguments["team"] = self._team_name
+        arguments["timestamp"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        arguments["x"] = x
+        arguments["y"] = y
+        arguments["z"] = 0.0
+        resp = self.make_request("set_robot_location", url_id=location_id, arguments=arguments)
+        print(resp)
 
     def make_request(self, request_name, **kwargs):
         if request_name not in self._request_types:
@@ -98,7 +123,7 @@ if __name__ == "__main__":
     # resp = DHC.make_request('list_inventory_items')
 
     # get shop info
-    resp = DHC.make_request('get_shop_info', url_id="ITEM00")
+    resp = DHC.make_request('get_shop_info', url_id="ITEM01")
     update_dict = dict()
     for key in resp[0]:
         if str(key)[0] == "_":
@@ -114,3 +139,4 @@ if __name__ == "__main__":
     # resp = DHC.make_request('set_shop', url_id="ITEM00", arguments=update_dict)
 
     print(resp)
+    DHC.update_location(1.0, 1.0)

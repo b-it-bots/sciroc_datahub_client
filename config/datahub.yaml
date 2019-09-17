@@ -1,6 +1,7 @@
 base_url: "https://api.mksmart.org/sciroc-competition/"
 team_id: "bitbots"
 auth_required: True
+episode_name: "EPISODE7"
 # only used when auth_required is set to true
 auth_info:
     user: "f416b957-fcd6-4777-a77e-62daf00f23e3"
