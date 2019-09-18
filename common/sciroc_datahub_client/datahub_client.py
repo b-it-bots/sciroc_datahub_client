@@ -149,7 +149,7 @@ class DataHubClient(object):
                 update_dict[key.encode('utf-8')] = order[key]
 
         update_dict['status'] = 'Complete'
-        resp = DHC.make_request('set_inventory_order', url_id=order_id, arguments=update_dict)
+        resp = self.make_request('set_inventory_order', url_id=order_id, arguments=update_dict)
 
     def get_goal(self):
         """Return order dict obj
