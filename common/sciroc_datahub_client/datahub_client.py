@@ -123,7 +123,7 @@ class DataHubClient(object):
                 update_dict[key.encode('utf-8')] = items[0][key]
 
         update_dict['quantity'] -= 1
-        resp = DHC.make_request('set_shop', url_id=item_id, arguments=update_dict)
+        resp = self.make_request('set_shop', url_id=item_id, arguments=update_dict)
 
     def finish_order(self, order_id):
         """Change the order status of `order_id` from 'Pending' to 'Complete'
