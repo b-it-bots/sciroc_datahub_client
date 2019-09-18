@@ -104,6 +104,27 @@ class DataHubClient(object):
         arguments["z"] = 0.0
         resp = self.make_request(request_name, url_id=status_id, arguments=arguments)
 
+    def update_after_pick(self, item_id):
+        """Update the inventory of the datahub after an item has been picked.
+
+        :item_id: str
+        :returns: None
+
+        """
+        request_name = "get_shop_info"
+        items = self.make_request(request_name, url_id=item_id)
+        update_dict = dict()
+        for key in items[0]:
+            if str(key)[0] == "_":
+                continue
+            try:
+                update_dict[key.encode('utf-8')] = items[0][key].encode('utf-8')
+            except AttributeError:
+                update_dict[key.encode('utf-8')] = items[0][key]
+
+        update_dict['quantity'] -= 1
+        resp = DHC.make_request('set_shop', url_id=item_id, arguments=update_dict)
+
     def get_goal(self):
         """Return order dict obj
         :returns: dict
@@ -183,7 +204,7 @@ class DataHubClient(object):
         if request_type['id_required']:
             id_string = str(kwargs.get('url_id', ''))
             url += '/' + id_string
-        print(url)
+        # print(url)
         auth = None
         if self._auth_required:
             auth = requests.auth.HTTPBasicAuth(self._username, self._password)
@@ -193,7 +214,7 @@ class DataHubClient(object):
             arguments = kwargs.get('arguments', dict())
             for key in request_type['schema_keys']:
                 assert key in arguments
-            print(arguments)
+            # print(arguments)
         resp = requests.request(request_type['type'], url, json=arguments, auth=auth)
 
         response = None
@@ -223,28 +244,6 @@ class DataHubClient(object):
 if __name__ == "__main__":
     DHC = DataHubClient.default_init()
 
-    """
-    # list inventory items
-    resp = DHC.make_request('list_inventory_items')
-
-    # get shop info
-    resp = DHC.make_request('get_shop_info', url_id="ITEM01")
-    update_dict = dict()
-    for key in resp[0]:
-        if str(key)[0] == "_":
-            continue
-        try:
-            update_dict[key.encode('utf-8')] = resp[0][key].encode('utf-8')
-        except AttributeError:
-            update_dict[key.encode('utf-8')] = resp[0][key]
-
-    print(update_dict)
-    update_dict['quantity'] -= 1 # place holder for processing and changing
-    resp = DHC.make_request('set_shop', url_id="ITEM00", arguments=update_dict)
-
-    print(resp)
-    """
-
     # DHC.update_robot_location(1.0, 1.0)
 
     # DHC.update_status("Going to Shelf 0", 1.0, 1.0)
@@ -253,8 +252,10 @@ if __name__ == "__main__":
     # print(goals)
 
     ITEM_ID = "ITEM01"
-    info = DHC.get_item_info(ITEM_ID)
-    print(info)
+    # info = DHC.get_item_info(ITEM_ID)
+    # print(info)
 
-    location = DHC.get_location_of(ITEM_ID)
-    print(location)
+    # location = DHC.get_location_of(ITEM_ID)
+    # print(location)
+
+    DHC.update_after_pick(ITEM_ID)
