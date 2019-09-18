@@ -125,6 +125,32 @@ class DataHubClient(object):
         update_dict['quantity'] -= 1
         resp = DHC.make_request('set_shop', url_id=item_id, arguments=update_dict)
 
+    def finish_order(self, order_id):
+        """Change the order status of `order_id` from 'Pending' to 'Complete'
+
+        :order_id: str
+        :returns: None
+
+        """
+        request_name = "get_order_info"
+
+        orders = self.make_request(request_name, url_id=order_id)
+        if orders is None:
+            print("Unsuccessful updating order")
+            return
+        order = orders[0]
+        update_dict = dict()
+        for key in order:
+            if str(key)[0] == "_":
+                continue
+            try:
+                update_dict[key.encode('utf-8')] = order[key].encode('utf-8')
+            except AttributeError:
+                update_dict[key.encode('utf-8')] = order[key]
+
+        update_dict['status'] = 'Complete'
+        resp = DHC.make_request('set_inventory_order', url_id=order_id, arguments=update_dict)
+
     def get_goal(self):
         """Return order dict obj
         :returns: dict
@@ -258,4 +284,7 @@ if __name__ == "__main__":
     # location = DHC.get_location_of(ITEM_ID)
     # print(location)
 
-    DHC.update_after_pick(ITEM_ID)
+    # DHC.update_after_pick(ITEM_ID)
+
+    ORDER_ID = "ORDER001"
+    DHC.finish_order(ORDER_ID)
